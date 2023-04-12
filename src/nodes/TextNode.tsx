@@ -1,60 +1,11 @@
 import { Box, TextField } from "@mui/material";
-import { useCallback } from "react";
-import {
-  Handle,
-  NodeProps,
-  Position,
-  useReactFlow,
-  useStoreApi,
-} from "reactflow";
+import { Handle, NodeProps, Position } from "reactflow";
 
+import useStore from "../Store";
 import "./CustomNode.css";
 
-function Select({
-  value,
-  handleId,
-  nodeId,
-}: {
-  value: string;
-  handleId: string;
-  nodeId: string;
-}) {
-  const { setNodes } = useReactFlow();
-  const store = useStoreApi();
-
-  const onChange = (evt: { target: { value: any } }) => {
-    console.log(evt.target.value);
-    const { nodeInternals } = store.getState();
-    setNodes(
-      Array.from(nodeInternals.values()).map((node) => {
-        if (node.id === nodeId) {
-          node.data = {
-            ...node.data,
-            selects: {
-              ...node.data.selects,
-              [handleId]: evt.target.value,
-            },
-          };
-        }
-
-        return node;
-      })
-    );
-  };
-
-  return (
-    <Box className="custom-node__select">
-      <TextField value={value} onChange={onChange} multiline />
-      <Handle type="source" position={Position.Right} id={handleId} />
-    </Box>
-  );
-}
-
-export default function TextNode({ data, isConnectable }: NodeProps) {
-  const onChange = useCallback((evt: { target: { value: any } }) => {
-    console.log(evt.target.value);
-  }, []);
-
+export default function TextNode({ id, data, isConnectable }: NodeProps) {
+  const updateTextContent = useStore((state) => state.updateTextContent);
   return (
     <Box
       sx={{
@@ -66,22 +17,24 @@ export default function TextNode({ data, isConnectable }: NodeProps) {
         flexDirection: "column",
       }}
     >
-      {Object.keys(data.selects).map((handleId) => (
-        <Select
-          key={handleId}
-          nodeId={handleId}
-          value={data.selects[handleId]}
-          handleId={handleId}
-        />
-      ))}
-      <div></div>
       <Handle
         type="source"
         position={Position.Top}
         id="top"
         isConnectable={isConnectable}
       />
-
+      {Object.keys(data.textFields).map((handleId) => (
+        <Box className="custom-node__select" key={handleId}>
+          <TextField
+            value={data.textFields[handleId]}
+            onChange={(evt) =>
+              updateTextContent(id, handleId, evt.target.value)
+            }
+            multiline
+          />
+          <Handle type="source" position={Position.Right} id={handleId} />
+        </Box>
+      ))}
       <Handle
         type="source"
         position={Position.Bottom}
