@@ -5,6 +5,7 @@ export default [
     id: "4",
     type: "text",
     position: { x: 100, y: 200 },
+    dragHandle: ".drag-handle",
     data: {
       textFields: {
         "text-0":
