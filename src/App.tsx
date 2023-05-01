@@ -11,6 +11,7 @@ import { shallow } from "zustand/shallow";
 import useStore from "./Store";
 
 import "reactflow/dist/style.css";
+import "./App.css";
 import TextNode from "./nodes/TextNode";
 
 const fitViewOptions: FitViewOptions = {
