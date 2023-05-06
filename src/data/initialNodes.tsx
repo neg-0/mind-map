@@ -17,4 +17,13 @@ export default [
       },
     },
   },
+  {
+    id: "17",
+    type: "insight",
+    position: { x: 300, y: 200 },
+    dragHandle: ".drag-handle",
+    data: {
+      query: "This is a dummy query from initialNodes",
+    },
+  },
 ] as Node[];
