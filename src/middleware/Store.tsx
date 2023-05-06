@@ -14,8 +14,29 @@ import {
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import initialEdges from "./initialEdges";
-import initialNodes from "./initialNodes";
+// Add this import to use the NodeManager for handling node actions
+import NodeManager from "./NodeManager";
+
+// Establish websocket connection to your backend server
+const socket = new WebSocket("ws://localhost:3001/");
+
+// Initialize NodeManager with initial nodes and edges
+const nodeManager = new NodeManager({ socket });
+
+// Listen for messages from the server
+socket.addEventListener("message", (event) => {
+  const message = JSON.parse(event.data);
+
+  switch (message.type) {
+    case "nodes-update":
+      nodeManager.updateNodesFromServer(message.nodes);
+      break;
+    case "edges-update":
+      nodeManager.updateEdgesFromServer(message.edges);
+      break;
+    // Handle other message types as needed
+  }
+});
 
 type NodeState = {
   nodes: Node[];
@@ -30,17 +51,23 @@ type NodeState = {
 const useStore = create<NodeState>()(
   persist(
     (set, get) => ({
-      nodes: initialNodes,
-      edges: initialEdges,
+      nodes: nodeManager.nodes,
+      edges: nodeManager.edges,
       onNodesChange: (changes: NodeChange[]) => {
-        set({
-          nodes: applyNodeChanges(changes, get().nodes),
-        });
+        const updatedNodes = applyNodeChanges(changes, get().nodes);
+        nodeManager.onNodesChange(changes);
+        socket.send(
+          JSON.stringify({ type: "nodes-update", nodes: updatedNodes })
+        );
+        set({ nodes: updatedNodes });
       },
       onEdgesChange: (changes: EdgeChange[]) => {
-        set({
-          edges: applyEdgeChanges(changes, get().edges),
-        });
+        const updatedEdges = applyEdgeChanges(changes, get().edges);
+        nodeManager.onEdgesChange(changes);
+        socket.send(
+          JSON.stringify({ type: "edges-update", edges: updatedEdges })
+        );
+        set({ edges: updatedEdges });
       },
       onConnect: (connection: Connection) => {
         set({

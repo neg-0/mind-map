@@ -10,7 +10,7 @@ import ReactFlow, {
   NodeTypes,
 } from "reactflow";
 import { shallow } from "zustand/shallow";
-import useStore from "./Store";
+import useStore from "./middleware/Store";
 
 import React from "react";
 import "reactflow/dist/style.css";
